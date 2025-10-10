@@ -14,6 +14,7 @@ export async function GET() {
     // Get session summaries from the webapp sessions store
     const { sessions: webappSessions } = await import('../screenshots/sessions-store')
     const webappSessionsData = webappSessions || []
+    console.log('Webapp sessions store contents:', webappSessionsData.map(s => ({ id: s.id, status: s.status, hasSummary: !!s.summary })))
 
     // List all blobs in the screenshots folder
     const { blobs } = await list({
@@ -33,6 +34,7 @@ export async function GET() {
         if (!sessionMap.has(sessionId)) {
           // Check if this session exists in webapp sessions store
           const webappSession = webappSessionsData.find(s => s.id === sessionId)
+          console.log(`Session ${sessionId} - webapp session found:`, !!webappSession, 'status:', webappSession?.status)
 
           sessionMap.set(sessionId, {
             id: sessionId,
