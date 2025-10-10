@@ -54,8 +54,24 @@ export default function SessionMonitor() {
   const handleGenerateSummary = async (session: Session) => {
     console.log('=== GENERATE SUMMARY CLICKED - LATEST VERSION ===')
     console.log('Generate Summary clicked for session:', session.id)
-    const studentName = tempNames[session.id]?.trim() || session.studentName
-    console.log('Student name from tempNames or session:', studentName)
+
+    // First check if there's a name being typed
+    let studentName = tempNames[session.id]?.trim()
+
+    // If no name is being typed, get from input field directly
+    if (!studentName) {
+      const inputElement = document.querySelector(`input[data-session-id="${session.id}"]`) as HTMLInputElement
+      if (inputElement && inputElement.value.trim()) {
+        studentName = inputElement.value.trim()
+      }
+    }
+
+    // Fallback to session's saved name
+    if (!studentName) {
+      studentName = session.studentName || 'Unknown Student'
+    }
+
+    console.log('Student name from tempNames/input/session:', studentName)
 
     if (!studentName || studentName === 'Unknown Student') {
       alert('Please enter a student name first')
@@ -187,6 +203,7 @@ export default function SessionMonitor() {
                   <input
                     type="text"
                     placeholder="Enter student name..."
+                    data-session-id={session.id}
                     value={tempNames[session.id] || ''}
                     onChange={(e) => {
                       setTempNames(prev => ({
