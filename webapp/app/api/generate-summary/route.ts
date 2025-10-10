@@ -20,7 +20,22 @@ export async function POST(request: NextRequest) {
 
     if (process.env.CLAUDE_API_KEY) {
       try {
-        console.log(`Analyzing ALL ${screenshots.length} screenshots for ${studentName}...`)
+        // Sample screenshots to stay within API limits (max 15 images)
+        const maxScreenshots = 15
+        let selectedScreenshots = screenshots
+
+        if (screenshots.length > maxScreenshots) {
+          // Take evenly distributed samples from the session
+          const step = Math.floor(screenshots.length / maxScreenshots)
+          selectedScreenshots = []
+          for (let i = 0; i < maxScreenshots; i++) {
+            const index = Math.min(i * step, screenshots.length - 1)
+            selectedScreenshots.push(screenshots[index])
+          }
+          console.log(`Sampling ${selectedScreenshots.length} of ${screenshots.length} screenshots for analysis`)
+        } else {
+          console.log(`Analyzing all ${screenshots.length} screenshots for ${studentName}...`)
+        }
 
         const messages = [
           {
@@ -28,9 +43,9 @@ export async function POST(request: NextRequest) {
             content: [
               {
                 type: 'text',
-                text: `Please analyze these ${screenshots.length} screenshots from ${studentName}'s learning session and write a brief report for their parents. Focus on what educational activities they were engaged in, what software or tools they used, and what progress they made. Write in a positive, professional tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing. Avoid using asterisks, EM dashes, or overly informal language.`
+                text: `Please analyze these ${selectedScreenshots.length} screenshots from ${studentName}'s learning session (sampled from ${screenshots.length} total screenshots). Write a brief report for their parents. Focus on what educational activities they were engaged in, what software or tools they used, and what progress they made. Write in a positive, professional tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing. Avoid using asterisks, EM dashes, or overly informal language.`
               },
-              ...screenshots.map((url: string) => ({
+              ...selectedScreenshots.map((url: string) => ({
                 type: 'image',
                 source: {
                   type: 'url',
