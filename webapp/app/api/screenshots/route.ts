@@ -39,11 +39,18 @@ export async function POST(request: NextRequest) {
       filename: file.name,
     }
 
-    // TODO: Store in database
     console.log('Screenshot received:', metadata)
 
-    // Broadcast to connected clients via Socket.IO
-    // TODO: Implement WebSocket broadcasting
+    // Update the in-memory sessions store
+    const sessionsResponse = await fetch(`${request.nextUrl.origin}/api/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        studentName: 'Unknown Student',
+        screenshotUrl: blob.url
+      })
+    })
 
     return NextResponse.json({ success: true, url: blob.url })
   } catch (error) {
