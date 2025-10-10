@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
             content: [
               {
                 type: 'text',
-                text: `Please analyze these ${screenshots.length} screenshots from ${studentName}'s learning session and write a brief, casual report for their parents. Focus on what educational activities they were engaged in, what software/tools they used, and what progress they made. Write in a positive, informal tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing:`
+                text: `Please analyze these ${screenshots.length} screenshots from ${studentName}'s learning session and write a brief report for their parents. Focus on what educational activities they were engaged in, what software or tools they used, and what progress they made. Write in a positive, professional tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing. Avoid using asterisks, EM dashes, or overly informal language.`
               },
               ...screenshots.map((url: string) => ({
                 type: 'image',
