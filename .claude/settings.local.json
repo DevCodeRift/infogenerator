@@ -29,7 +29,16 @@
       "Bash(mkdir:*)",
       "Bash(npm create:*)",
       "Bash(npm init:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags=\"-s -w\" -o infogenerator.exe)",
+      "Bash(vercel env:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel storage add:*)",
+      "Bash(vercel storage:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:webapp-qznta64fh-codedevrifts-projects.vercel.app)",
+      "WebFetch(domain:webapp-car84lul0-codedevrifts-projects.vercel.app)",
+      "WebFetch(domain:webapp-nfaei5ho8-codedevrifts-projects.vercel.app)"
     ],
     "deny": [],
     "ask": []
