@@ -52,10 +52,14 @@ export default function SessionMonitor() {
   }
 
   const handleGenerateSummary = async (session: Session) => {
-    if (!session.studentName || session.studentName === 'Unknown Student') {
+    const studentName = tempNames[session.id]?.trim()
+    if (!studentName) {
       alert('Please enter a student name first')
       return
     }
+
+    // Save the student name first
+    await updateStudentName(session.id, studentName)
 
     try {
       const response = await fetch('/api/generate-summary', {
@@ -63,13 +67,13 @@ export default function SessionMonitor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId: session.id,
-          studentName: session.studentName,
+          studentName: studentName,
           screenshots: session.screenshots,
         }),
       })
 
       const summary = await response.json()
-      alert(`Summary generated for ${session.studentName}:\\n\\n${summary.summary}`)
+      alert(`Summary generated for ${studentName}:\\n\\n${summary.summary}`)
     } catch (error) {
       console.error('Failed to generate summary:', error)
       alert('Failed to generate summary')
@@ -202,7 +206,7 @@ export default function SessionMonitor() {
 
                   <button
                     onClick={() => handleGenerateSummary(session)}
-                    disabled={!session.studentName || session.studentName === 'Unknown Student'}
+                    disabled={!tempNames[session.id]?.trim()}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     Generate Summary
