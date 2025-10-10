@@ -53,10 +53,10 @@ export default function SessionMonitor() {
 
   const handleGenerateSummary = async (session: Session) => {
     console.log('Generate Summary clicked for session:', session.id)
-    const studentName = tempNames[session.id]?.trim()
-    console.log('Student name from tempNames:', studentName)
+    const studentName = tempNames[session.id]?.trim() || session.studentName
+    console.log('Student name from tempNames or session:', studentName)
 
-    if (!studentName) {
+    if (!studentName || studentName === 'Unknown Student') {
       alert('Please enter a student name first')
       return
     }
@@ -219,7 +219,7 @@ export default function SessionMonitor() {
 
                   <button
                     onClick={() => handleGenerateSummary(session)}
-                    disabled={!tempNames[session.id]?.trim()}
+                    disabled={!tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     Generate Summary
