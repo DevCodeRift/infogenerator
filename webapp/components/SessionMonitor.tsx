@@ -24,6 +24,7 @@ export default function SessionMonitor() {
   const [editingSession, setEditingSession] = useState<string | null>(null)
   const [tempNames, setTempNames] = useState<{[key: string]: string}>({})
   const [viewingScreenshots, setViewingScreenshots] = useState<string | null>(null)
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
 
   // Load sessions on component mount and refresh every 10 seconds
   useEffect(() => {
@@ -55,12 +56,16 @@ export default function SessionMonitor() {
     console.log('=== GENERATE SUMMARY CLICKED - LATEST VERSION ===')
     console.log('Generate Summary clicked for session:', session.id)
 
+    setIsGeneratingSummary(true)
+
     // First check if there's a name being typed
     let studentName = tempNames[session.id]?.trim()
 
     // If no name is being typed, get from input field directly
     if (!studentName) {
       const inputElement = document.querySelector(`input[data-session-id="${session.id}"]`) as HTMLInputElement
+      console.log('Input element found:', !!inputElement)
+      console.log('Input element value:', inputElement?.value)
       if (inputElement && inputElement.value.trim()) {
         studentName = inputElement.value.trim()
       }
@@ -75,6 +80,7 @@ export default function SessionMonitor() {
 
     if (!studentName || studentName === 'Unknown Student') {
       alert('Please enter a student name first')
+      setIsGeneratingSummary(false)
       return
     }
 
@@ -107,6 +113,8 @@ export default function SessionMonitor() {
     } catch (error) {
       console.error('Failed to generate summary:', error)
       alert('Failed to generate summary')
+    } finally {
+      setIsGeneratingSummary(false)
     }
   }
 
@@ -225,6 +233,10 @@ export default function SessionMonitor() {
                       }
                     }}
                     onBlur={(e) => {
+                      if (isGeneratingSummary) {
+                        console.log('Skipping onBlur because generating summary')
+                        return
+                      }
                       const name = e.target.value.trim()
                       if (name) {
                         updateStudentName(session.id, name)
