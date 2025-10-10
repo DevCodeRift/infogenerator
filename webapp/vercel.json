@@ -1,0 +1,32 @@
+{
+  "name": "infogenerator-webapp",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "BLOB_READ_WRITE_TOKEN": "@blob_read_write_token",
+    "GO_APP_PATH": ""
+  },
+  "functions": {
+    "app/api/screenshots/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/generate-summary/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

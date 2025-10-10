@@ -1,0 +1,13 @@
+{
+  "data_dir": "sessions",
+  "openai_api_key": "",
+  "analysis_prompt": "Analyze these screenshots from a learning/work session and provide a concise summary including: 1) Primary activities, 2) Applications used, 3) Focus areas, 4) Productivity assessment, and 5) Key insights. Provide a structured summary suitable for personal reflection.",
+  "use_offline_analysis": true,
+  "enable_ai_enhancement": false,
+  "webapp_url": "https://your-vercel-app.vercel.app",
+  "screenshot_settings": {
+    "quality": 80,
+    "compress": true,
+    "max_file_size": 5
+  }
+}

@@ -1,0 +1,42 @@
+# Binaries
+infogenerator
+infogenerator.exe
+infogenerator-*
+*.exe
+
+# Go build artifacts
+*.out
+*.test
+vendor/
+
+# Session data and screenshots
+sessions/
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration files with sensitive data
+config.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

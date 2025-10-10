@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go mod init:*)",
+      "Bash(chmod:*)",
+      "Bash(go mod:*)",
+      "Bash(sudo apt:*)",
+      "Bash(sudo apt install:*)",
+      "Bash(sudo -S apt:*)",
+      "Bash(sudo -S apt install:*)",
+      "Bash(GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags=\"-s -w\" -o builds/infogenerator-windows.exe)",
+      "Bash(GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -ldflags=\"-s -w\" -o builds/infogenerator-linux)",
+      "Bash(./builds/infogenerator-linux:*)",
+      "Bash(./builds/infogenerator-linux)",
+      "Bash(timeout:*)",
+      "Bash(sqlite3:*)",
+      "Bash(go run:*)",
+      "Bash(GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc go build -ldflags=\"-s -w\" -o builds/windows-package/infogenerator.exe)",
+      "Bash(go build:*)",
+      "Bash(./infogenerator:*)",
+      "Bash(./builds/windows-package/infogenerator.exe --help)",
+      "WebFetch(domain:www.gyan.dev)",
+      "Bash(wget:*)",
+      "Bash(ffmpeg:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pkill:*)",
+      "Bash(GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -ldflags=\"-s -w\" -o builds/linux-package/infogenerator)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm create:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
