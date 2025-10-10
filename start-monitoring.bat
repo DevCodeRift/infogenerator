@@ -19,7 +19,7 @@ cls
 echo 🚀 InfoGenerator - Student Session Monitor
 echo ==========================================
 echo.
-echo ✅ Webapp URL: https://webapp-nfaei5ho8-codedevrifts-projects.vercel.app
+echo ✅ Webapp URL: https://infogenerator.vercel.app
 echo.
 echo 📝 Instructions:
 echo    1. This will start capturing screenshots automatically
@@ -36,17 +36,22 @@ echo 🎯 Starting session in 1 second...
 timeout /t 1 /nobreak >nul
 echo.
 echo 📸 Monitoring started! Screenshots are being captured...
-echo 🌐 View live progress at: https://webapp-nfaei5ho8-codedevrifts-projects.vercel.app
+echo 🌐 View live progress at: https://infogenerator.vercel.app
 echo.
 echo 💡 Tip: Leave this window open. Close it when you want to stop.
 echo ==================================================================================
 echo.
 
+REM Stop any existing sessions first
+echo 🔄 Stopping any existing sessions...
+infogenerator.exe -stop 2>nul
+
 REM Start the monitoring with default settings
+echo 📸 Starting new session...
 infogenerator.exe -start -interval 30
 
 echo.
 echo ✅ Session completed!
-echo 🌐 Check your webapp for the summary: https://webapp-nfaei5ho8-codedevrifts-projects.vercel.app
+echo 🌐 Check your webapp for the summary: https://infogenerator.vercel.app
 echo.
 pause
