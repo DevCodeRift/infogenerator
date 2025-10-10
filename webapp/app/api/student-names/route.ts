@@ -12,16 +12,31 @@ async function loadData() {
   if (dataLoaded || !process.env.BLOB_READ_WRITE_TOKEN) return
 
   try {
-    const response = await fetch('https://l9aepk5xvcnpybfx.public.blob.vercel-storage.com/session-data.json')
-    if (response.ok) {
-      const data = await response.json()
-      studentNames = data.names || {}
-      sessionStatus = data.status || {}
-      sessionSummaries = data.summaries || {}
-      console.log('Loaded session data from blob storage:', Object.keys(studentNames).length, 'sessions')
+    // Use list to find our session data file
+    const { list } = await import('@vercel/blob')
+    const { blobs } = await list({
+      prefix: 'session-data',
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    })
+
+    if (blobs.length > 0) {
+      // Get the most recent session data file
+      const latestBlob = blobs.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())[0]
+      console.log('Loading session data from:', latestBlob.url)
+
+      const response = await fetch(latestBlob.url)
+      if (response.ok) {
+        const data = await response.json()
+        studentNames = data.names || {}
+        sessionStatus = data.status || {}
+        sessionSummaries = data.summaries || {}
+        console.log('Loaded session data:', Object.keys(studentNames).length, 'sessions', Object.keys(sessionStatus).length, 'statuses')
+      }
+    } else {
+      console.log('No session data file found, starting fresh')
     }
   } catch (error) {
-    console.log('No existing session data found, starting fresh')
+    console.log('Error loading session data:', error, '- starting fresh')
   }
 
   dataLoaded = true
@@ -39,11 +54,21 @@ async function saveData() {
       lastUpdated: new Date().toISOString()
     }
 
-    await put('session-data.json', JSON.stringify(data), {
+    // Use timestamp to ensure unique filename and avoid caching issues
+    const timestamp = Date.now()
+    const filename = `session-data-${timestamp}.json`
+
+    const blob = await put(filename, JSON.stringify(data, null, 2), {
       access: 'public',
       token: process.env.BLOB_READ_WRITE_TOKEN,
     })
-    console.log('Saved session data to blob storage')
+
+    console.log('Saved session data to blob storage:', blob.url)
+    console.log('Data saved:', {
+      names: Object.keys(studentNames).length,
+      statuses: Object.keys(sessionStatus).length,
+      summaries: Object.keys(sessionSummaries).length
+    })
   } catch (error) {
     console.error('Failed to save session data:', error)
   }
