@@ -41,26 +41,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Screenshot received:', metadata)
 
-    // Import the sessions directly instead of using fetch
-    const { sessions, updateSession } = await import('./sessions-store')
-
-    // Update or create session
-    let session = sessions.find(s => s.id === sessionId)
-    if (!session) {
-      session = {
-        id: sessionId,
-        studentName: 'Unknown Student',
-        startTime: new Date().toISOString(),
-        status: 'active' as const,
-        screenshots: []
-      }
-      sessions.push(session)
-      console.log('Created new session:', sessionId)
-    }
-
-    // Add screenshot to session
-    session.screenshots.push(blob.url)
-    console.log('Session updated, screenshot count:', session.screenshots.length)
+    // Store session data in a simple way for now - we'll count screenshots from blob storage
+    // Each screenshot upload acts as a "ping" that the session is active
 
     return NextResponse.json({ success: true, url: blob.url })
   } catch (error) {

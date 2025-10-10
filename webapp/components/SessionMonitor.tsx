@@ -22,16 +22,18 @@ export default function SessionMonitor() {
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
   const [studentName, setStudentName] = useState('')
 
-  // Load sessions on component mount
+  // Load sessions on component mount and refresh every 10 seconds
   useEffect(() => {
     fetchSessions()
+    const interval = setInterval(fetchSessions, 10000) // Refresh every 10 seconds
+    return () => clearInterval(interval)
   }, [])
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/sessions')
+      const response = await fetch('/api/live-sessions')
       const data = await response.json()
-      setSessions(data)
+      setSessions(data || [])
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
