@@ -69,8 +69,8 @@ export default function SessionMonitor() {
 
   const updateStudentName = async (sessionId: string, name: string) => {
     try {
-      const response = await fetch('/api/student-names', {
-        method: 'POST',
+      const response = await fetch('/api/sessions', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
