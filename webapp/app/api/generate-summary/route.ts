@@ -68,7 +68,9 @@ export async function POST(request: NextRequest) {
 
       } catch (claudeError) {
         console.error('Claude analysis failed:', claudeError)
-        summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
+        console.error('API Key present:', !!process.env.CLAUDE_API_KEY)
+        console.error('Screenshots count:', screenshots.length)
+        summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey. [Claude API failed - check logs]`
       }
     } else {
       // Fallback without Claude
@@ -81,7 +83,12 @@ export async function POST(request: NextRequest) {
       screenshotCount: screenshots.length,
       summary,
       generatedAt: new Date().toISOString(),
-      usedClaude: !!process.env.CLAUDE_API_KEY
+      usedClaude: !!process.env.CLAUDE_API_KEY,
+      hasApiKey: !!process.env.CLAUDE_API_KEY,
+      debug: process.env.NODE_ENV === 'development' ? {
+        apiKeyLength: process.env.CLAUDE_API_KEY?.length || 0,
+        screenshotCount: screenshots.length
+      } : undefined
     })
 
   } catch (error) {
