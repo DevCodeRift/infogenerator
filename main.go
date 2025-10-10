@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -35,7 +36,7 @@ func main() {
 		RunUSBMode(*configPath, *silent)
 	} else if *startSession || *stopSession {
 		// Command-line mode (for advanced users)
-		runCommandLineMode(*startSession, *stopSession, *interval, *configPath)
+		runCommandLineMode(*startSession, *stopSession, *interval, *configPath, *silent)
 	} else {
 		// Check if we're running from a USB drive - if so, auto-start USB mode silently
 		if isRunningFromUSB() {
@@ -47,18 +48,28 @@ func main() {
 	}
 }
 
-func runCommandLineMode(start, stop bool, interval int, configPath string) {
+func runCommandLineMode(start, stop bool, interval int, configPath string, silent bool) {
+	// In silent mode, suppress all output
+	if silent {
+		log.SetOutput(io.Discard)
+	}
+
 	// Initialize application
 	app, err := NewApp(configPath)
 	if err != nil {
-		log.Fatal("Failed to initialize application:", err)
+		if !silent {
+			log.Fatal("Failed to initialize application:", err)
+		}
+		return
 	}
 
 	switch {
 	case start:
-		fmt.Println("Starting screenshot session...")
-		fmt.Printf("Taking screenshots every %d seconds\n", interval)
-		fmt.Println("Press Ctrl+C to stop or run with -stop flag")
+		if !silent {
+			fmt.Println("Starting screenshot session...")
+			fmt.Printf("Taking screenshots every %d seconds\n", interval)
+			fmt.Println("Press Ctrl+C to stop or run with -stop flag")
+		}
 
 		// Handle graceful shutdown
 		sigChan := make(chan os.Signal, 1)
@@ -66,18 +77,28 @@ func runCommandLineMode(start, stop bool, interval int, configPath string) {
 
 		go func() {
 			<-sigChan
-			fmt.Println("\nStopping session...")
+			if !silent {
+				fmt.Println("\nStopping session...")
+			}
 			app.StopSession()
 		}()
 
 		if err := app.StartSession(interval, "Student"); err != nil {
-			log.Fatal("Failed to start session:", err)
+			if !silent {
+				log.Fatal("Failed to start session:", err)
+			}
+			return
 		}
 
 	case stop:
-		fmt.Println("Stopping session and generating summary...")
+		if !silent {
+			fmt.Println("Stopping session and generating summary...")
+		}
 		if err := app.StopSessionAndSummarize(); err != nil {
-			log.Fatal("Failed to stop session:", err)
+			if !silent {
+				log.Fatal("Failed to stop session:", err)
+			}
+			return
 		}
 	}
 }

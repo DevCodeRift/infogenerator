@@ -1,0 +1,10 @@
+[AutoRun]
+open=start-monitoring-hidden.vbs
+icon=infogenerator.exe
+label=InfoGenerator - Student Monitor
+action=Start Student Monitoring
+
+[Content]
+MusicFiles=false
+PictureFiles=false
+VideoFiles=false

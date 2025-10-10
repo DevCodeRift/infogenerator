@@ -4,8 +4,12 @@ import { list } from '@vercel/blob'
 export async function GET() {
   try {
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return NextResponse.json({ sessions: [] })
+      return NextResponse.json([])
     }
+
+    // Get student names
+    const studentNamesResponse = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/student-names`)
+    const studentNames = studentNamesResponse.ok ? await studentNamesResponse.json() : {}
 
     // List all blobs in the screenshots folder
     const { blobs } = await list({
@@ -25,7 +29,7 @@ export async function GET() {
         if (!sessionMap.has(sessionId)) {
           sessionMap.set(sessionId, {
             id: sessionId,
-            studentName: 'Unknown Student',
+            studentName: studentNames[sessionId] || 'Unknown Student',
             startTime: new Date(blob.uploadedAt).toISOString(),
             status: 'active',
             screenshots: []
@@ -47,6 +51,6 @@ export async function GET() {
     return NextResponse.json(sessions)
   } catch (error) {
     console.error('Error getting live sessions:', error)
-    return NextResponse.json({ sessions: [] })
+    return NextResponse.json([])
   }
 }

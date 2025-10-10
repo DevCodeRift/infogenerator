@@ -20,7 +20,8 @@ export default function SessionMonitor() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
-  const [studentName, setStudentName] = useState('')
+  const [editingSession, setEditingSession] = useState<string | null>(null)
+  const [tempNames, setTempNames] = useState<{[key: string]: string}>({})
 
   // Load sessions on component mount and refresh every 10 seconds
   useEffect(() => {
@@ -66,8 +67,8 @@ export default function SessionMonitor() {
 
   const updateStudentName = async (sessionId: string, name: string) => {
     try {
-      const response = await fetch('/api/sessions', {
-        method: 'PUT',
+      const response = await fetch('/api/student-names', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
@@ -123,11 +124,35 @@ export default function SessionMonitor() {
                   <input
                     type="text"
                     placeholder="Enter student name..."
-                    value={session.studentName === 'Unknown Student' ? '' : session.studentName || ''}
-                    onChange={(e) => setStudentName(e.target.value)}
+                    value={tempNames[session.id] !== undefined ? tempNames[session.id] : (session.studentName === 'Unknown Student' ? '' : session.studentName || '')}
+                    onChange={(e) => {
+                      setTempNames(prev => ({
+                        ...prev,
+                        [session.id]: e.target.value
+                      }))
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const name = tempNames[session.id]?.trim()
+                        if (name) {
+                          updateStudentName(session.id, name)
+                          setTempNames(prev => {
+                            const newState = { ...prev }
+                            delete newState[session.id]
+                            return newState
+                          })
+                        }
+                      }
+                    }}
                     onBlur={(e) => {
-                      if (e.target.value.trim()) {
-                        updateStudentName(session.id, e.target.value.trim())
+                      const name = e.target.value.trim()
+                      if (name) {
+                        updateStudentName(session.id, name)
+                        setTempNames(prev => {
+                          const newState = { ...prev }
+                          delete newState[session.id]
+                          return newState
+                        })
                       }
                     }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

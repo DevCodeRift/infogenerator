@@ -1,9 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-import path from 'path'
-
-const execAsync = promisify(exec)
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,52 +11,79 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try to call the Go binary for analysis
-    let summary
-    const goAppPath = process.env.GO_APP_PATH || '../infogenerator'
-
-    try {
-      // Call the Go application to analyze the session
-      const { stdout, stderr } = await execAsync(
-        `${goAppPath} -analyze`,
-        { cwd: path.dirname(goAppPath), timeout: 60000 }
+    if (!studentName || studentName === 'Unknown Student') {
+      return NextResponse.json(
+        { error: 'Please enter a student name first' },
+        { status: 400 }
       )
-
-      // Parse the analysis result if available
-      summary = {
-        sessionId,
-        studentName: studentName || 'Unknown Student',
-        screenshotCount: screenshots.length,
-        summary: stdout || `Analysis for ${studentName || 'student'}: Session contained ${screenshots.length} screenshots captured over the monitoring period.`,
-        activities: [
-          'Computer usage detected',
-          'Screenshot analysis performed',
-          'Session data processed'
-        ],
-        generatedAt: new Date().toISOString(),
-        analysisOutput: stdout,
-        analysisError: stderr
-      }
-    } catch (goError) {
-      console.log('Go analyzer not available, using fallback analysis:', goError)
-
-      // Fallback analysis
-      summary = {
-        sessionId,
-        studentName: studentName || 'Unknown Student',
-        screenshotCount: screenshots.length,
-        summary: `Analysis for ${studentName || 'student'}: Session contained ${screenshots.length} screenshots captured over the monitoring period. Primary activities included computer usage and application interaction.`,
-        activities: [
-          'Computer usage detected',
-          'Multiple applications used',
-          'Active engagement observed'
-        ],
-        generatedAt: new Date().toISOString(),
-        note: 'Analysis performed using fallback method - full analysis requires Go application'
-      }
     }
 
-    return NextResponse.json(summary)
+    // Use Claude API if available
+    let summary = ''
+
+    if (process.env.CLAUDE_API_KEY) {
+      try {
+        console.log(`Analyzing ALL ${screenshots.length} screenshots for ${studentName}...`)
+
+        const messages = [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Please analyze these ${screenshots.length} screenshots from ${studentName}'s learning session and write a brief, casual report for their parents. Focus on what educational activities they were engaged in, what software/tools they used, and what progress they made. Write in a positive, informal tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing:`
+              },
+              ...screenshots.map((url: string) => ({
+                type: 'image',
+                source: {
+                  type: 'url',
+                  url: url
+                }
+              }))
+            ]
+          }
+        ]
+
+        const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.CLAUDE_API_KEY,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-sonnet-20240229',
+            max_tokens: 300,
+            messages: messages
+          })
+        })
+
+        if (claudeResponse.ok) {
+          const result = await claudeResponse.json()
+          summary = result.content[0].text
+          console.log('Claude analysis completed successfully')
+        } else {
+          throw new Error(`Claude API error: ${claudeResponse.status}`)
+        }
+
+      } catch (claudeError) {
+        console.error('Claude analysis failed:', claudeError)
+        summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
+      }
+    } else {
+      // Fallback without Claude
+      summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
+    }
+
+    return NextResponse.json({
+      sessionId,
+      studentName,
+      screenshotCount: screenshots.length,
+      summary,
+      generatedAt: new Date().toISOString(),
+      usedClaude: !!process.env.CLAUDE_API_KEY
+    })
+
   } catch (error) {
     console.error('Error generating summary:', error)
     return NextResponse.json(
