@@ -52,6 +52,7 @@ export default function SessionMonitor() {
   }
 
   const handleGenerateSummary = async (session: Session) => {
+    console.log('=== GENERATE SUMMARY CLICKED - LATEST VERSION ===')
     console.log('Generate Summary clicked for session:', session.id)
     const studentName = tempNames[session.id]?.trim() || session.studentName
     console.log('Student name from tempNames or session:', studentName)

@@ -40,7 +40,8 @@
       "WebFetch(domain:webapp-car84lul0-codedevrifts-projects.vercel.app)",
       "WebFetch(domain:webapp-nfaei5ho8-codedevrifts-projects.vercel.app)",
       "WebFetch(domain:webapp-fqtyxh3md-codedevrifts-projects.vercel.app)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:infogenerator.vercel.app)"
     ],
     "deny": [],
     "ask": []
