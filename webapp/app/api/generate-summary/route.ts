@@ -80,14 +80,23 @@ export async function POST(request: NextRequest) {
       // Import and update sessions directly to avoid HTTP call issues
       const { sessions } = await import('../screenshots/sessions-store')
 
-      const session = sessions.find(s => s.id === sessionId)
+      let session = sessions.find(s => s.id === sessionId)
       if (session) {
         session.status = 'completed'
         session.summary = summary
-        console.log('Successfully updated session status to completed:', sessionId)
+        console.log('Successfully updated existing session:', sessionId)
       } else {
-        console.error('Session not found for update:', sessionId)
-        console.log('Available sessions:', sessions.map(s => s.id))
+        // Create new session if it doesn't exist
+        const newSession = {
+          id: sessionId,
+          studentName: studentName,
+          startTime: new Date().toISOString(),
+          status: 'completed' as 'completed',
+          screenshots: screenshots,
+          summary: summary
+        }
+        sessions.push(newSession)
+        console.log('Created new completed session:', sessionId)
       }
     } catch (error) {
       console.error('Failed to update session status:', error)

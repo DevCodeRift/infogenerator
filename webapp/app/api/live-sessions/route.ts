@@ -11,6 +11,10 @@ export async function GET() {
     const studentNamesResponse = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/student-names`)
     const studentNames = studentNamesResponse.ok ? await studentNamesResponse.json() : {}
 
+    // Get session summaries from the webapp sessions store
+    const { sessions: webappSessions } = await import('../screenshots/sessions-store')
+    const webappSessionsData = webappSessions || []
+
     // List all blobs in the screenshots folder
     const { blobs } = await list({
       prefix: 'screenshots/',
@@ -27,12 +31,16 @@ export async function GET() {
         const sessionId = pathParts[1]
 
         if (!sessionMap.has(sessionId)) {
+          // Check if this session exists in webapp sessions store
+          const webappSession = webappSessionsData.find(s => s.id === sessionId)
+
           sessionMap.set(sessionId, {
             id: sessionId,
             studentName: studentNames[sessionId] || 'Unknown Student',
             startTime: new Date(blob.uploadedAt).toISOString(),
-            status: 'active',
-            screenshots: []
+            status: webappSession?.status || 'active',
+            screenshots: [],
+            summary: webappSession?.summary || undefined
           })
         }
 
