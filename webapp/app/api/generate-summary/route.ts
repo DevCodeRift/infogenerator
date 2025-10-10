@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
             content: [
               {
                 type: 'text',
-                text: `Please analyze these ${selectedScreenshots.length} screenshots from ${studentName}'s learning session (sampled from ${screenshots.length} total screenshots). Write a brief report for their parents. Focus on what educational activities they were engaged in, what software or tools they used, and what progress they made. Write in a positive, professional tone suitable for parents. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you observe them doing. Avoid using asterisks, EM dashes, or overly informal language.`
+                text: `Write a brief learning session report for ${studentName}'s parents about their educational activities today. Focus on what educational activities they were engaged in, what software or tools they used, and what progress they made. Write in a positive, professional tone as if you observed the session directly. Use gender-neutral pronouns (they/them). Keep it to 2-3 sentences but be specific about what you saw them doing. Avoid using asterisks, EM dashes, or overly informal language. Do not mention screenshots, analysis, or AI assistance.`
               },
               ...selectedScreenshots.map((url: string) => ({
                 type: 'image',
