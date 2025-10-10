@@ -4,6 +4,7 @@ interface Session {
   startTime: string
   status: 'active' | 'completed'
   screenshots: string[]
+  summary?: string
 }
 
 // Shared sessions store

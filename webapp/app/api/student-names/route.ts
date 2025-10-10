@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// In-memory storage for student names mapped to session IDs
+// In-memory storage for student names and session status mapped to session IDs
 const studentNames: { [sessionId: string]: string } = {}
+const sessionStatus: { [sessionId: string]: 'active' | 'completed' } = {}
+const sessionSummaries: { [sessionId: string]: string } = {}
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,5 +30,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json(studentNames)
+  return NextResponse.json({
+    names: studentNames,
+    status: sessionStatus,
+    summaries: sessionSummaries
+  })
 }

@@ -77,6 +77,21 @@ export async function POST(request: NextRequest) {
       summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
     }
 
+    // Mark session as completed and save summary
+    try {
+      await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/sessions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          status: 'completed',
+          summary
+        })
+      })
+    } catch (error) {
+      console.error('Failed to update session status:', error)
+    }
+
     return NextResponse.json({
       sessionId,
       studentName,
