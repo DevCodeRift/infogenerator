@@ -34,9 +34,18 @@ export default function SessionMonitor() {
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/sessions')
+      const response = await fetch('/api/live-sessions')
       const data = await response.json()
       setSessions(data || [])
+
+      // Initialize tempNames with existing student names
+      const newTempNames: {[key: string]: string} = {}
+      data?.forEach((session: Session) => {
+        if (session.studentName && session.studentName !== 'Unknown Student') {
+          newTempNames[session.id] = session.studentName
+        }
+      })
+      setTempNames(prev => ({ ...newTempNames, ...prev }))
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
@@ -69,8 +78,8 @@ export default function SessionMonitor() {
 
   const updateStudentName = async (sessionId: string, name: string) => {
     try {
-      const response = await fetch('/api/sessions', {
-        method: 'PUT',
+      const response = await fetch('/api/student-names', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
@@ -150,7 +159,7 @@ export default function SessionMonitor() {
                   <input
                     type="text"
                     placeholder="Enter student name..."
-                    value={tempNames[session.id] !== undefined ? tempNames[session.id] : (session.studentName === 'Unknown Student' ? '' : session.studentName || '')}
+                    value={tempNames[session.id] || ''}
                     onChange={(e) => {
                       setTempNames(prev => ({
                         ...prev,
