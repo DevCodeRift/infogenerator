@@ -77,27 +77,17 @@ export async function POST(request: NextRequest) {
     // Mark session as completed and save summary
     try {
       console.log('=== Updating session status ===')
-      const updateUrl = `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/sessions`
-      console.log('Update URL:', updateUrl)
-      console.log('Update payload:', { sessionId, status: 'completed', summary: summary.substring(0, 50) + '...' })
+      // Import and update sessions directly to avoid HTTP call issues
+      const { sessions } = await import('../screenshots/sessions-store')
 
-      const sessionsResponse = await fetch(updateUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          status: 'completed',
-          summary
-        })
-      })
-
-      console.log('Session update response status:', sessionsResponse.status)
-      if (sessionsResponse.ok) {
-        const updatedSession = await sessionsResponse.json()
-        console.log('Successfully updated session:', updatedSession)
+      const session = sessions.find(s => s.id === sessionId)
+      if (session) {
+        session.status = 'completed'
+        session.summary = summary
+        console.log('Successfully updated session status to completed:', sessionId)
       } else {
-        const errorText = await sessionsResponse.text()
-        console.error('Failed to update session status:', sessionsResponse.status, errorText)
+        console.error('Session not found for update:', sessionId)
+        console.log('Available sessions:', sessions.map(s => s.id))
       }
     } catch (error) {
       console.error('Failed to update session status:', error)
