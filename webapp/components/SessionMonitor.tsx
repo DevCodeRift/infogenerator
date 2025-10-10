@@ -237,10 +237,10 @@ export default function SessionMonitor() {
                       console.log('Button should be disabled?', !tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student'))
                       handleGenerateSummary(session)
                     }}
-                    disabled={!tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student')}
+                    disabled={false}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
-                    Generate Summary
+                    Generate Summary (TEST)
                   </button>
 
                   <button
