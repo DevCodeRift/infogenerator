@@ -4,29 +4,16 @@ export async function POST(request: NextRequest) {
   console.log('=== Generate Summary API Called ===')
   try {
     const body = await request.json()
-    console.log('Request body:', JSON.stringify(body, null, 2))
-
     const { sessionId, studentName, screenshots } = body
 
-    console.log('Parsed data:', { sessionId, studentName, screenshotCount: screenshots?.length })
+    console.log('Request:', { sessionId, studentName, screenshotCount: screenshots?.length })
 
     if (!sessionId || !screenshots || screenshots.length === 0) {
-      console.log('Missing required fields - sessionId:', sessionId, 'screenshots:', screenshots?.length)
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
-
-    if (!studentName || studentName === 'Unknown Student') {
-      console.log('Invalid student name:', studentName)
-      return NextResponse.json(
-        { error: 'Please enter a student name first' },
-        { status: 400 }
-      )
-    }
-
-    console.log('All validation passed, proceeding with summary generation...')
 
     // Use Claude API if available
     let summary = ''

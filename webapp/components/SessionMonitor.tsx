@@ -21,10 +21,7 @@ export default function SessionMonitor() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
-  const [editingSession, setEditingSession] = useState<string | null>(null)
-  const [tempNames, setTempNames] = useState<{[key: string]: string}>({})
   const [viewingScreenshots, setViewingScreenshots] = useState<string | null>(null)
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
 
   // Load sessions on component mount and refresh every 10 seconds
   useEffect(() => {
@@ -38,56 +35,19 @@ export default function SessionMonitor() {
       const response = await fetch('/api/live-sessions')
       const data = await response.json()
       setSessions(data || [])
-
-      // Initialize tempNames with existing student names
-      const newTempNames: {[key: string]: string} = {}
-      data?.forEach((session: Session) => {
-        if (session.studentName && session.studentName !== 'Unknown Student') {
-          newTempNames[session.id] = session.studentName
-        }
-      })
-      setTempNames(prev => ({ ...newTempNames, ...prev }))
     } catch (error) {
       console.error('Failed to fetch sessions:', error)
     }
   }
 
   const handleGenerateSummary = async (session: Session) => {
-    console.log('=== GENERATE SUMMARY CLICKED - LATEST VERSION ===')
-    console.log('Generate Summary clicked for session:', session.id)
+    console.log('=== GENERATE SUMMARY CLICKED - SIMPLIFIED ===')
 
-    setIsGeneratingSummary(true)
+    // Get student name directly from the input field
+    const inputElement = document.querySelector(`input[data-session-id="${session.id}"]`) as HTMLInputElement
+    const studentName = inputElement?.value?.trim() || 'Student'
 
-    // First check if there's a name being typed
-    let studentName = tempNames[session.id]?.trim()
-
-    // If no name is being typed, get from input field directly
-    if (!studentName) {
-      const inputElement = document.querySelector(`input[data-session-id="${session.id}"]`) as HTMLInputElement
-      console.log('Input element found:', !!inputElement)
-      console.log('Input element value:', inputElement?.value)
-      if (inputElement && inputElement.value.trim()) {
-        studentName = inputElement.value.trim()
-      }
-    }
-
-    // Fallback to session's saved name
-    if (!studentName) {
-      studentName = session.studentName || 'Unknown Student'
-    }
-
-    console.log('Student name from tempNames/input/session:', studentName)
-
-    if (!studentName || studentName === 'Unknown Student') {
-      alert('Please enter a student name first')
-      setIsGeneratingSummary(false)
-      return
-    }
-
-    console.log('About to save student name...')
-    // Save the student name first
-    await updateStudentName(session.id, studentName)
-    console.log('Student name saved, now generating summary...')
+    console.log('Student name from input:', studentName)
 
     try {
       console.log('Making request to /api/generate-summary with:', {
@@ -113,8 +73,6 @@ export default function SessionMonitor() {
     } catch (error) {
       console.error('Failed to generate summary:', error)
       alert('Failed to generate summary')
-    } finally {
-      setIsGeneratingSummary(false)
     }
   }
 
@@ -164,16 +122,6 @@ export default function SessionMonitor() {
   const activeSessions = sessions.filter(s => s.status === 'active')
   const completedSessions = sessions.filter(s => s.status === 'completed')
 
-  // Debug logging
-  console.log('=== COMPONENT RENDER DEBUG ===')
-  console.log('Active sessions:', activeSessions.length)
-  console.log('Sessions data:', activeSessions.map(s => ({
-    id: s.id,
-    studentName: s.studentName,
-    tempName: tempNames[s.id]
-  })))
-  console.log('TempNames state:', tempNames)
-
   return (
     <div className="space-y-6">
       {/* Active Sessions */}
@@ -212,41 +160,6 @@ export default function SessionMonitor() {
                     type="text"
                     placeholder="Enter student name..."
                     data-session-id={session.id}
-                    value={tempNames[session.id] || ''}
-                    onChange={(e) => {
-                      setTempNames(prev => ({
-                        ...prev,
-                        [session.id]: e.target.value
-                      }))
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const name = tempNames[session.id]?.trim()
-                        if (name) {
-                          updateStudentName(session.id, name)
-                          setTempNames(prev => {
-                            const newState = { ...prev }
-                            delete newState[session.id]
-                            return newState
-                          })
-                        }
-                      }
-                    }}
-                    onBlur={(e) => {
-                      if (isGeneratingSummary) {
-                        console.log('Skipping onBlur because generating summary')
-                        return
-                      }
-                      const name = e.target.value.trim()
-                      if (name) {
-                        updateStudentName(session.id, name)
-                        setTempNames(prev => {
-                          const newState = { ...prev }
-                          delete newState[session.id]
-                          return newState
-                        })
-                      }
-                    }}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
 
@@ -258,18 +171,10 @@ export default function SessionMonitor() {
                   </button>
 
                   <button
-                    onClick={() => {
-                      console.log('=== BUTTON CLICKED ===')
-                      console.log('Session:', session.id)
-                      console.log('TempNames for session:', tempNames[session.id])
-                      console.log('Session student name:', session.studentName)
-                      console.log('Button should be disabled?', !tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student'))
-                      handleGenerateSummary(session)
-                    }}
-                    disabled={false}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    onClick={() => handleGenerateSummary(session)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   >
-                    Generate Summary (TEST)
+                    Generate Summary
                   </button>
 
                   <button
