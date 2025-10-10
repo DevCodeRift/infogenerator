@@ -56,6 +56,26 @@ export async function GET() {
 
     const sessions = Array.from(sessionMap.values())
 
+    // Also add completed sessions from webapp store that might not have screenshots
+    for (const webappSession of webappSessionsData) {
+      if (webappSession.status === 'completed' && !sessions.find(s => s.id === webappSession.id)) {
+        console.log('Adding completed session without screenshots:', webappSession.id)
+        sessions.push({
+          id: webappSession.id,
+          studentName: webappSession.studentName || 'Unknown Student',
+          startTime: webappSession.startTime,
+          status: webappSession.status,
+          screenshots: webappSession.screenshots || [],
+          summary: webappSession.summary
+        })
+      }
+    }
+
+    console.log('=== Live Sessions Response ===')
+    console.log('Sessions from blob storage:', sessionMap.size)
+    console.log('Webapp sessions:', webappSessionsData.length)
+    console.log('Final sessions:', sessions.map(s => ({ id: s.id, status: s.status, hasScreenshots: s.screenshots.length > 0 })))
+
     return NextResponse.json(sessions)
   } catch (error) {
     console.error('Error getting live sessions:', error)
