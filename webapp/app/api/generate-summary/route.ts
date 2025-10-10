@@ -74,18 +74,23 @@ export async function POST(request: NextRequest) {
       summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
     }
 
-    // Mark session as completed and save summary - use direct import instead of fetch
+    // Mark session as completed and save summary
     try {
-      // Import the sessions store directly instead of making an HTTP request
-      const { sessions } = await import('../screenshots/sessions-store')
+      // Use fetch to the sessions API to update status
+      const sessionsResponse = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/sessions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          status: 'completed',
+          summary
+        })
+      })
 
-      const session = sessions.find(s => s.id === sessionId)
-      if (session) {
-        session.status = 'completed'
-        session.summary = summary
-        console.log('Successfully updated session status directly')
+      if (sessionsResponse.ok) {
+        console.log('Successfully updated session status to completed')
       } else {
-        console.error('Session not found:', sessionId)
+        console.error('Failed to update session status:', sessionsResponse.status)
       }
     } catch (error) {
       console.error('Failed to update session status:', error)
