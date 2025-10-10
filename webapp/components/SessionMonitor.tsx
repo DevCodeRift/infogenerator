@@ -22,6 +22,7 @@ export default function SessionMonitor() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [screenshots, setScreenshots] = useState<Screenshot[]>([])
   const [viewingScreenshots, setViewingScreenshots] = useState<string | null>(null)
+  const [generatingGif, setGeneratingGif] = useState<string | null>(null)
 
   // Load sessions on component mount and refresh every 10 seconds
   useEffect(() => {
@@ -92,6 +93,68 @@ export default function SessionMonitor() {
       }
     } catch (error) {
       console.error('Failed to update student name:', error)
+    }
+  }
+
+  const generateTimelapseGif = async (session: Session) => {
+    setGeneratingGif(session.id)
+
+    try {
+      // Dynamic import of gif.js library
+      const GIF = (await import('gif.js')).default
+
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: 800,
+        height: 600,
+        workerScript: '/gif.worker.js'
+      })
+
+      // Load and process screenshots
+      for (let i = 0; i < session.screenshots.length; i++) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+
+        await new Promise((resolve, reject) => {
+          img.onload = () => {
+            // Create canvas and resize image
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            canvas.width = 800
+            canvas.height = 600
+
+            // Draw and scale image to fit
+            ctx?.drawImage(img, 0, 0, 800, 600)
+
+            // Add frame to GIF (every 3rd screenshot for speed)
+            if (i % 3 === 0) {
+              gif.addFrame(canvas, { delay: 500 }) // 500ms per frame
+            }
+            resolve(true)
+          }
+          img.onerror = reject
+          img.src = session.screenshots[i]
+        })
+      }
+
+      // Generate GIF
+      gif.on('finished', (blob: Blob) => {
+        // Download the GIF
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${session.studentName || 'session'}-${session.id}-timelapse.gif`
+        a.click()
+        URL.revokeObjectURL(url)
+        setGeneratingGif(null)
+      })
+
+      gif.render()
+    } catch (error) {
+      console.error('Failed to generate GIF:', error)
+      alert('Failed to generate timelapse GIF')
+      setGeneratingGif(null)
     }
   }
 
@@ -223,6 +286,14 @@ export default function SessionMonitor() {
                       className="px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
                     >
                       View Screenshots
+                    </button>
+
+                    <button
+                      onClick={() => generateTimelapseGif(session)}
+                      disabled={generatingGif === session.id}
+                      className="px-3 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      {generatingGif === session.id ? 'Generating...' : 'Generate Timelapse'}
                     </button>
 
                     <button

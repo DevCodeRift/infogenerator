@@ -18,7 +18,8 @@
     "typescript": "^5.6.3",
     "@vercel/blob": "^0.25.0",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "gif.js": "^0.2.0"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
