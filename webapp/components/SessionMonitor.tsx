@@ -34,7 +34,7 @@ export default function SessionMonitor() {
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch('/api/live-sessions')
+      const response = await fetch('/api/sessions')
       const data = await response.json()
       setSessions(data || [])
     } catch (error) {

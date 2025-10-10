@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { sessions, createSession } from './sessions-store'
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,8 +42,20 @@ export async function POST(request: NextRequest) {
 
     console.log('Screenshot received:', metadata)
 
-    // Store session data in a simple way for now - we'll count screenshots from blob storage
-    // Each screenshot upload acts as a "ping" that the session is active
+    // Update or create session in the sessions store
+    let session = sessions.find(s => s.id === sessionId)
+    if (!session) {
+      session = createSession(sessionId)
+    }
+
+    // Add screenshot URL to session
+    session.screenshots.push(blob.url)
+
+    // Update start time to earliest if this is an earlier screenshot
+    const screenshotTime = new Date().toISOString()
+    if (new Date(screenshotTime) < new Date(session.startTime)) {
+      session.startTime = screenshotTime
+    }
 
     return NextResponse.json({ success: true, url: blob.url })
   } catch (error) {
