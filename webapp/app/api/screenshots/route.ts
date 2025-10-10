@@ -41,16 +41,26 @@ export async function POST(request: NextRequest) {
 
     console.log('Screenshot received:', metadata)
 
-    // Update the in-memory sessions store
-    const sessionsResponse = await fetch(`${request.nextUrl.origin}/api/sessions`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId,
+    // Import the sessions directly instead of using fetch
+    const { sessions, updateSession } = await import('./sessions-store')
+
+    // Update or create session
+    let session = sessions.find(s => s.id === sessionId)
+    if (!session) {
+      session = {
+        id: sessionId,
         studentName: 'Unknown Student',
-        screenshotUrl: blob.url
-      })
-    })
+        startTime: new Date().toISOString(),
+        status: 'active' as const,
+        screenshots: []
+      }
+      sessions.push(session)
+      console.log('Created new session:', sessionId)
+    }
+
+    // Add screenshot to session
+    session.screenshots.push(blob.url)
+    console.log('Session updated, screenshot count:', session.screenshots.length)
 
     return NextResponse.json({ success: true, url: blob.url })
   } catch (error) {
