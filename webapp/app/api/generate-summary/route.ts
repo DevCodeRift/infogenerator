@@ -74,29 +74,26 @@ export async function POST(request: NextRequest) {
       summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
     }
 
-    // Mark session as completed and save summary
+    // Mark session as completed and save summary using student-names API as storage
     try {
       console.log('=== Updating session status ===')
-      // Import and update sessions directly to avoid HTTP call issues
-      const { sessions } = await import('../screenshots/sessions-store')
 
-      let session = sessions.find(s => s.id === sessionId)
-      if (session) {
-        session.status = 'completed'
-        session.summary = summary
-        console.log('Successfully updated existing session:', sessionId)
-      } else {
-        // Create new session if it doesn't exist
-        const newSession = {
-          id: sessionId,
+      // Use the student-names API to store completion status
+      const statusResponse = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/student-names`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: sessionId,
           studentName: studentName,
-          startTime: new Date().toISOString(),
-          status: 'completed' as 'completed',
-          screenshots: screenshots,
+          status: 'completed',
           summary: summary
-        }
-        sessions.push(newSession)
-        console.log('Created new completed session:', sessionId)
+        })
+      })
+
+      if (statusResponse.ok) {
+        console.log('Successfully saved session completion status:', sessionId)
+      } else {
+        console.error('Failed to save session completion status:', statusResponse.status)
       }
     } catch (error) {
       console.error('Failed to update session status:', error)

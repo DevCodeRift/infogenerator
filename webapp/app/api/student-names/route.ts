@@ -7,23 +7,35 @@ const sessionSummaries: { [sessionId: string]: string } = {}
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId, studentName } = await request.json()
+    const { sessionId, studentName, status, summary } = await request.json()
 
-    if (!sessionId || !studentName) {
+    if (!sessionId) {
       return NextResponse.json(
-        { error: 'Missing sessionId or studentName' },
+        { error: 'Missing sessionId' },
         { status: 400 }
       )
     }
 
-    studentNames[sessionId] = studentName
-    console.log('Updated student name:', sessionId, '→', studentName)
+    if (studentName) {
+      studentNames[sessionId] = studentName
+      console.log('Updated student name:', sessionId, '→', studentName)
+    }
 
-    return NextResponse.json({ success: true, studentName })
+    if (status) {
+      sessionStatus[sessionId] = status
+      console.log('Updated session status:', sessionId, '→', status)
+    }
+
+    if (summary) {
+      sessionSummaries[sessionId] = summary
+      console.log('Updated session summary:', sessionId, '→', summary.substring(0, 50) + '...')
+    }
+
+    return NextResponse.json({ success: true, studentName, status, summary: !!summary })
   } catch (error) {
-    console.error('Error updating student name:', error)
+    console.error('Error updating session data:', error)
     return NextResponse.json(
-      { error: 'Failed to update student name' },
+      { error: 'Failed to update session data' },
       { status: 500 }
     )
   }

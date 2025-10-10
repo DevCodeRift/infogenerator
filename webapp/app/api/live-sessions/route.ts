@@ -7,14 +7,16 @@ export async function GET() {
       return NextResponse.json([])
     }
 
-    // Get student names
+    // Get student names, session status, and summaries
     const studentNamesResponse = await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/student-names`)
-    const studentNames = studentNamesResponse.ok ? await studentNamesResponse.json() : {}
+    const studentData = studentNamesResponse.ok ? await studentNamesResponse.json() : {}
 
-    // Get session summaries from the webapp sessions store
-    const { sessions: webappSessions } = await import('../screenshots/sessions-store')
-    const webappSessionsData = webappSessions || []
-    console.log('Webapp sessions store contents:', webappSessionsData.map(s => ({ id: s.id, status: s.status, hasSummary: !!s.summary })))
+    const studentNames = studentData.names || {}
+    const sessionStatus = studentData.status || {}
+    const sessionSummaries = studentData.summaries || {}
+
+    console.log('Session status data:', sessionStatus)
+    console.log('Session summaries data:', Object.keys(sessionSummaries))
 
     // List all blobs in the screenshots folder
     const { blobs } = await list({
@@ -32,17 +34,19 @@ export async function GET() {
         const sessionId = pathParts[1]
 
         if (!sessionMap.has(sessionId)) {
-          // Check if this session exists in webapp sessions store
-          const webappSession = webappSessionsData.find(s => s.id === sessionId)
-          console.log(`Session ${sessionId} - webapp session found:`, !!webappSession, 'status:', webappSession?.status)
+          // Get status and summary from the student-names API storage
+          const status = sessionStatus[sessionId] || 'active'
+          const summary = sessionSummaries[sessionId] || undefined
+
+          console.log(`Session ${sessionId} - status:`, status, 'hasSummary:', !!summary)
 
           sessionMap.set(sessionId, {
             id: sessionId,
             studentName: studentNames[sessionId] || 'Unknown Student',
             startTime: new Date(blob.uploadedAt).toISOString(),
-            status: webappSession?.status || 'active',
+            status: status,
             screenshots: [],
-            summary: webappSession?.summary || undefined
+            summary: summary
           })
         }
 
@@ -58,24 +62,8 @@ export async function GET() {
 
     const sessions = Array.from(sessionMap.values())
 
-    // Also add completed sessions from webapp store that might not have screenshots
-    for (const webappSession of webappSessionsData) {
-      if (webappSession.status === 'completed' && !sessions.find(s => s.id === webappSession.id)) {
-        console.log('Adding completed session without screenshots:', webappSession.id)
-        sessions.push({
-          id: webappSession.id,
-          studentName: webappSession.studentName || 'Unknown Student',
-          startTime: webappSession.startTime,
-          status: webappSession.status,
-          screenshots: webappSession.screenshots || [],
-          summary: webappSession.summary
-        })
-      }
-    }
-
     console.log('=== Live Sessions Response ===')
     console.log('Sessions from blob storage:', sessionMap.size)
-    console.log('Webapp sessions:', webappSessionsData.length)
     console.log('Final sessions:', sessions.map(s => ({ id: s.id, status: s.status, hasScreenshots: s.screenshots.length > 0 })))
 
     return NextResponse.json(sessions)
