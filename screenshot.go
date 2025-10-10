@@ -145,7 +145,11 @@ func (sc *ScreenshotCapture) sendToWebapp(img image.Image, sessionID, timestamp,
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		// Read the response body for more details
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		fmt.Printf("Webapp returned error status: %d\n", resp.StatusCode)
+		fmt.Printf("Response body: %s\n", string(bodyBytes))
+		fmt.Printf("Request URL: %s\n", sc.webappURL+"/api/screenshots")
 		return
 	}
 
