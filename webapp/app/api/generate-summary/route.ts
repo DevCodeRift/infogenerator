@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
+  console.log('=== Generate Summary API Called ===')
   try {
-    const { sessionId, studentName, screenshots } = await request.json()
+    const body = await request.json()
+    console.log('Request body:', JSON.stringify(body, null, 2))
+
+    const { sessionId, studentName, screenshots } = body
+
+    console.log('Parsed data:', { sessionId, studentName, screenshotCount: screenshots?.length })
 
     if (!sessionId || !screenshots || screenshots.length === 0) {
+      console.log('Missing required fields - sessionId:', sessionId, 'screenshots:', screenshots?.length)
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -12,11 +19,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!studentName || studentName === 'Unknown Student') {
+      console.log('Invalid student name:', studentName)
       return NextResponse.json(
         { error: 'Please enter a student name first' },
         { status: 400 }
       )
     }
+
+    console.log('All validation passed, proceeding with summary generation...')
 
     // Use Claude API if available
     let summary = ''
@@ -77,17 +87,19 @@ export async function POST(request: NextRequest) {
       summary = `${studentName} had a productive learning session today with ${screenshots.length} screenshots captured during their work. They engaged with various educational activities and showed consistent focus throughout the session. It's great to see them actively using technology to support their learning journey.`
     }
 
-    // Mark session as completed and save summary
+    // Mark session as completed and save summary - use direct import instead of fetch
     try {
-      await fetch(`${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'}/api/sessions`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          status: 'completed',
-          summary
-        })
-      })
+      // Import the sessions store directly instead of making an HTTP request
+      const { sessions } = await import('../screenshots/sessions-store')
+
+      const session = sessions.find(s => s.id === sessionId)
+      if (session) {
+        session.status = 'completed'
+        session.summary = summary
+        console.log('Successfully updated session status directly')
+      } else {
+        console.error('Session not found:', sessionId)
+      }
     } catch (error) {
       console.error('Failed to update session status:', error)
     }

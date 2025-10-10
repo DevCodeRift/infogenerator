@@ -52,16 +52,27 @@ export default function SessionMonitor() {
   }
 
   const handleGenerateSummary = async (session: Session) => {
+    console.log('Generate Summary clicked for session:', session.id)
     const studentName = tempNames[session.id]?.trim()
+    console.log('Student name from tempNames:', studentName)
+
     if (!studentName) {
       alert('Please enter a student name first')
       return
     }
 
+    console.log('About to save student name...')
     // Save the student name first
     await updateStudentName(session.id, studentName)
+    console.log('Student name saved, now generating summary...')
 
     try {
+      console.log('Making request to /api/generate-summary with:', {
+        sessionId: session.id,
+        studentName: studentName,
+        screenshots: session.screenshots.length + ' screenshots'
+      })
+
       const response = await fetch('/api/generate-summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,7 +83,9 @@ export default function SessionMonitor() {
         }),
       })
 
+      console.log('Generate summary response status:', response.status)
       const summary = await response.json()
+      console.log('Summary response:', summary)
       alert(`Summary generated for ${studentName}:\\n\\n${summary.summary}`)
     } catch (error) {
       console.error('Failed to generate summary:', error)
