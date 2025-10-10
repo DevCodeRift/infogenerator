@@ -140,6 +140,16 @@ export default function SessionMonitor() {
   const activeSessions = sessions.filter(s => s.status === 'active')
   const completedSessions = sessions.filter(s => s.status === 'completed')
 
+  // Debug logging
+  console.log('=== COMPONENT RENDER DEBUG ===')
+  console.log('Active sessions:', activeSessions.length)
+  console.log('Sessions data:', activeSessions.map(s => ({
+    id: s.id,
+    studentName: s.studentName,
+    tempName: tempNames[s.id]
+  })))
+  console.log('TempNames state:', tempNames)
+
   return (
     <div className="space-y-6">
       {/* Active Sessions */}
@@ -219,7 +229,14 @@ export default function SessionMonitor() {
                   </button>
 
                   <button
-                    onClick={() => handleGenerateSummary(session)}
+                    onClick={() => {
+                      console.log('=== BUTTON CLICKED ===')
+                      console.log('Session:', session.id)
+                      console.log('TempNames for session:', tempNames[session.id])
+                      console.log('Session student name:', session.studentName)
+                      console.log('Button should be disabled?', !tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student'))
+                      handleGenerateSummary(session)
+                    }}
                     disabled={!tempNames[session.id]?.trim() && (!session.studentName || session.studentName === 'Unknown Student')}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
