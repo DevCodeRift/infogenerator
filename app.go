@@ -133,7 +133,15 @@ func (app *App) takeScreenshot() error {
 }
 
 func (app *App) takeScreenshotForSession(sessionID int) error {
-	filePath, err := app.screenshotCapture.CaptureScreenForSession(fmt.Sprintf("%d", sessionID))
+	// Use a globally unique session ID: timestamp-based
+	globalSessionID := fmt.Sprintf("%d_%d", sessionID, time.Now().Unix())
+
+	// For existing sessions, use the session ID from start time
+	if app.sessionManager.currentSession != nil {
+		globalSessionID = fmt.Sprintf("%d_%d", sessionID, app.sessionManager.currentSession.StartTime.Unix())
+	}
+
+	filePath, err := app.screenshotCapture.CaptureScreenForSession(globalSessionID)
 	if err != nil {
 		return err
 	}
