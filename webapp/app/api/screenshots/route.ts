@@ -26,21 +26,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Store in Vercel Blob
-    const blob = await put(`screenshots/${sessionId}/${timestamp}-${file.name}`, file, {
+    const blobPath = `screenshots/${sessionId}/${timestamp}-${file.name}`
+    console.log('Uploading to blob path:', blobPath)
+
+    const blob = await put(blobPath, file, {
       access: 'public',
       token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
-    // Store metadata in temporary storage (could be database)
-    const metadata = {
+    console.log('Screenshot uploaded successfully:', {
       sessionId,
       timestamp,
-      url: blob.url,
-      size: file.size,
-      filename: file.name,
-    }
-
-    console.log('Screenshot received:', metadata)
+      blobPath,
+      blobUrl: blob.url,
+      blobPathname: blob.pathname,
+      fileSize: file.size,
+    })
 
     // Update or create session in the sessions store
     let session = sessions.find(s => s.id === sessionId)
