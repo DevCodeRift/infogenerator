@@ -3,6 +3,7 @@ infogenerator
 infogenerator.exe
 infogenerator-*
 *.exe
+windows-dist/bin/
 
 # Go build artifacts
 *.out
