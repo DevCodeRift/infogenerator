@@ -28,9 +28,9 @@ export async function GET() {
       console.log('Error fetching student names:', fetchError)
     }
 
-    const studentNames = studentData.names || {}
-    const sessionStatus = studentData.status || {}
-    const sessionSummaries = studentData.summaries || {}
+    const studentNames: Record<string, string> = studentData.names || {}
+    const sessionStatus: Record<string, string> = studentData.status || {}
+    const sessionSummaries: Record<string, string> = studentData.summaries || {}
 
     console.log('Session status data:', sessionStatus)
     console.log('Session summaries data:', Object.keys(sessionSummaries))
