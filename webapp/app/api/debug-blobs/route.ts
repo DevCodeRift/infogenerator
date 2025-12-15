@@ -27,7 +27,7 @@ export async function GET() {
     )
 
     // Group by session ID
-    const sessionGroups: { [key: string]: { count: number; newest: string; oldest: string } } = {}
+    const sessionGroups: { [key: string]: { count: number; newest: Date; oldest: Date } } = {}
 
     for (const blob of allBlobs) {
       const pathParts = blob.pathname.split('/')
@@ -41,10 +41,10 @@ export async function GET() {
           }
         }
         sessionGroups[sessionId].count++
-        if (new Date(blob.uploadedAt) > new Date(sessionGroups[sessionId].newest)) {
+        if (blob.uploadedAt > sessionGroups[sessionId].newest) {
           sessionGroups[sessionId].newest = blob.uploadedAt
         }
-        if (new Date(blob.uploadedAt) < new Date(sessionGroups[sessionId].oldest)) {
+        if (blob.uploadedAt < sessionGroups[sessionId].oldest) {
           sessionGroups[sessionId].oldest = blob.uploadedAt
         }
       }
