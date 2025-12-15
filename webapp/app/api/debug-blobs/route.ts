@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { list } from '@vercel/blob'
+import { list, type ListBlobResult } from '@vercel/blob'
 
 export async function GET() {
   try {
@@ -8,11 +8,11 @@ export async function GET() {
     }
 
     // List all blobs with pagination
-    let allBlobs: Awaited<ReturnType<typeof list>>['blobs'] = []
+    let allBlobs: ListBlobResult['blobs'] = []
     let cursor: string | undefined = undefined
 
     do {
-      const response = await list({
+      const response: ListBlobResult = await list({
         prefix: 'screenshots/',
         token: process.env.BLOB_READ_WRITE_TOKEN,
         cursor,
